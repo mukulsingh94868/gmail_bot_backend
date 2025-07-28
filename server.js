@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 
 import AuthRoutes from './Routes/AuthRoutes.js';
 import PositionRoutes from './routes/PositionRoutes.js';
+import PositionAppliedRoutes from './routes/PositionAppliedRoutes.js';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ limit: "100mb", extended: true }));
 app.use("/api/uploads", express.static("uploads"));
 app.use('/api/auth', AuthRoutes);
 app.use('/api/position', PositionRoutes);
+app.use('/api/apply', PositionAppliedRoutes);
 
 mongoose.connect(MONGO_URI).then(() => {
         console.log('DB connection established');

@@ -23,6 +23,7 @@ export const applyForPosition = async (req, res) => {
     await positionData.save();
 
     res.status(200).json({
+      statusCode: 200,
       message: "Position Saved successfully",
       data: positionData,
     });
@@ -39,6 +40,7 @@ export const getUserPositions = async (req, res) => {
     const positions = await Position.find({ userId });
 
     res.status(200).json({
+      statusCode: 200,
       message: "User positions fetched successfully",
       data: positions,
     });
@@ -58,12 +60,13 @@ export const getAvailablePositions = async (req, res) => {
 
     const uniquePositions = [...new Set(positionList)]?.map(
       (position, index) => ({
-        id: index + 1,
+        _id: index + 1,
         name: position,
       })
     );
 
     res.status(200).json({
+      statusCode: 200,
       message: "Available positions fetched successfully",
       data: uniquePositions,
     });
@@ -96,6 +99,7 @@ export const getUserPositionRecords = async (req, res) => {
     const records = await Position.find({ userId, position: selectedPosition });
 
     res.status(200).json({
+      statusCode: 200,
       message: `Records for '${selectedPosition}' fetched successfully`,
       data: records,
     });
@@ -105,3 +109,6 @@ export const getUserPositionRecords = async (req, res) => {
   }
 };
 
+export const PositionApplied = async (req, res) => {
+
+}
