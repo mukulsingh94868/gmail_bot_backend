@@ -50,6 +50,92 @@ export const getUserPositions = async (req, res) => {
   }
 };
 
+export const getUserPositionById = async (req, res) => {
+  try {
+    const positionId = req.params.id;
+    const position = await Position.findById(positionId);
+
+    if (!position) {
+      return res.status(404).json({ message: "Position not found" });
+    }
+
+    res.status(200).json({
+      statusCode: 200,
+      message: "User position fetched successfully",
+      data: position,
+    });
+  } catch (error) {
+    console.error("Fetch User Position Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+  
+export const editUserPosition = async (req, res) => {
+  try {
+    const positionId = req.params.id;
+    const { position, emailSubject, emailBody } = req.body;
+
+    if (!position || !emailSubject || !emailBody) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (!req.userId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: User not authenticated" });
+    }
+
+    const updatedPosition = await Position.findByIdAndUpdate(
+      positionId,
+      {
+        position,
+        emailSubject,
+        emailBody,
+      },
+      { new: true }
+    );   
+
+    if (!updatedPosition) {
+      return res.status(404).json({ message: "Position not found" });
+    }
+
+    res.status(200).json({
+      statusCode: 200,
+      message: "Position updated successfully",
+      data: updatedPosition,
+    });
+  } catch (err) {
+    console.error("Email Send Error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteUserPosition = async (req, res) => {
+  try {
+    const positionId = req.params.id;
+
+    if (!req.userId) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: User not authenticated" });
+    }
+
+    const deletedPosition = await Position.findByIdAndDelete(positionId);
+
+    if (!deletedPosition) {
+      return res.status(404).json({ message: "Position not found" });
+    }
+
+    res.status(200).json({
+      statusCode: 200,
+      message: "Position deleted successfully",
+    });
+  } catch (err) {
+    console.error("Email Send Error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const getAvailablePositions = async (req, res) => {
   try {
     const userId = req.userId;
@@ -108,7 +194,3 @@ export const getUserPositionRecords = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-export const PositionApplied = async (req, res) => {
-
-}
