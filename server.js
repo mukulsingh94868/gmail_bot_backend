@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import mongoose from 'mongoose';
 
-import AuthRoutes from './Routes/AuthRoutes.js';
+import AuthRoutes from './routes/AuthRoutes.js';
 import PositionRoutes from './routes/PositionRoutes.js';
 import PositionAppliedRoutes from './routes/PositionAppliedRoutes.js';
 
