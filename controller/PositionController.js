@@ -1,3 +1,4 @@
+import axios from "axios";
 import Position from "../model/PositionModel.js";
 
 export const applyForPosition = async (req, res) => {
@@ -69,7 +70,7 @@ export const getUserPositionById = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-  
+
 export const editUserPosition = async (req, res) => {
   try {
     const positionId = req.params.id;
@@ -93,7 +94,7 @@ export const editUserPosition = async (req, res) => {
         emailBody,
       },
       { new: true }
-    );   
+    );
 
     if (!updatedPosition) {
       return res.status(404).json({ message: "Position not found" });
@@ -192,5 +193,59 @@ export const getUserPositionRecords = async (req, res) => {
   } catch (error) {
     console.error("Fetch Position Records Error:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const generateMail = async (req, res) => {
+  const { position } = req.body;
+  const applicantName = req.name;
+  const applicantEmail = req.email;
+
+  try {
+    const prompt = `Write a professional job application email for the position of "${position}". Include a suitable subject line and a concise, polite body.`;
+
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ]
+      }
+    );
+
+    const fullText = response?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    let subject = '';
+    let body = '';
+
+    if (fullText) {
+      const [subjectLine, ...bodyLines] = fullText.split('\n\n');
+      subject = subjectLine.replace(/^Subject:\s*/i, '').trim();
+
+      subject = subject.replace(/\[Your Name\]/i, applicantName);
+      
+      body = bodyLines.join('\n\n').trim();
+      body = body
+        .replace(/\[Your Name\]/gi, applicantName)
+        .replace(/\[Your Email Address\]/gi, applicantEmail || '')
+    }
+
+    res.status(200).json({
+      statusCode: 200,
+      message: `Email is generated successfully`,
+      data: {
+        subject,
+        body,
+      },
+    });
+  } catch (error) {
+    console.error('Error generating email:', error.response?.data || error.message);
+    res.status(500).json({
+      statusCode: 500,
+      message: 'Error generating email',
+      error: error.response?.data || error.message,
+    });
   }
 };

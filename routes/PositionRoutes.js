@@ -1,5 +1,5 @@
 import express from "express";
-import { applyForPosition, deleteUserPosition, editUserPosition, getAvailablePositions, getUserPositionById, getUserPositionRecords, getUserPositions } from "../controller/PositionController.js";
+import { applyForPosition, deleteUserPosition, editUserPosition, generateMail, getAvailablePositions, getUserPositionById, getUserPositionRecords, getUserPositions } from "../controller/PositionController.js";
 import authenticateUser from "../middleware/authenticateUser.js";
 
 const router = express.Router();
@@ -11,5 +11,6 @@ router.put("/editUserPositions/:id", authenticateUser, editUserPosition);
 router.delete("/deleteUserPositions/:id", authenticateUser, deleteUserPosition);
 router.get("/options", authenticateUser, getAvailablePositions);
 router.get("/postionRecord/:id", authenticateUser, getUserPositionRecords);
+router.post("/generateMail", authenticateUser, generateMail);
 
 export default router;

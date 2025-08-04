@@ -14,6 +14,8 @@ const authenticateUser = async (req, res, next) => {
     if (!user) return res.status(401).json({ message: "User not found" });
 
     req.userId = user._id;
+    req.name = user.name;
+    req.email = user.email;
     next();
   } catch (err) {
     console.log("JWT Error:", err);
