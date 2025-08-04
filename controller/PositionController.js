@@ -202,7 +202,7 @@ export const generateMail = async (req, res) => {
   const applicantEmail = req.email;
 
   try {
-    const prompt = `Write a professional job application email for the position of "${position}". Include a suitable subject line and a concise, polite body.`;
+    const prompt = `${position}`;
 
     const response = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
