@@ -2,10 +2,14 @@ import mongoose from "mongoose";
 
 const positionAppliedSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "Auth", required: true },
-  emailApplied: [{
+  emailApplied: {
     type: String,
     required: true,
-  }],
+  },
+  // emailApplied: [{
+  //   type: String,
+  //   required: true,
+  // }],
   positionApplied: {
     type: String,
     required: true,
