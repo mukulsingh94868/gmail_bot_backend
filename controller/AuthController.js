@@ -7,10 +7,13 @@ dotenv.config();
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
-// Register a new user
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
+
+    if (!["candidate", "recruiter"].includes(role || "candidate")) {
+      return res.status(400).json({ message: "Invalid role provided" });
+    }
 
     const existingUser = await Auth.findOne({ email });
     if (existingUser)
@@ -23,13 +26,16 @@ export const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role: role || "candidate",
     });
+
     await user.save();
 
     res.status(201).json({
       statusCode: 201,
-      message: "User registered successfully",
+      message: `${role?.charAt(0).toUpperCase() + role?.slice(1).toLowerCase()} registered successfully`,
       userId: user?._id,
+      role: user?.role,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -57,7 +63,12 @@ export const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user._id, email: user.email, name: user.name },
+      {
+        userId: user?._id,
+        email: user?.email,
+        name: user?.name,
+        role: user?.role,
+      },
       SECRET_KEY,
       { expiresIn: "7d" }
     );
@@ -67,9 +78,10 @@ export const loginUser = async (req, res) => {
       message: "Login successful",
       token,
       data: {
-        userId: user._id,
-        email: user.email,
-        name: user.name,
+        userId: user?._id,
+        email: user?.email,
+        name: user?.name,
+        role: user?.role,
       },
     });
   } catch (error) {

@@ -19,6 +19,12 @@ const authSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       select: false,
     },
+    role: {
+      type: String,
+      enum: ["recruiter", "candidate"],
+      default: "candidate",
+      required: true,
+    },
   },
   { timestamps: true }
 );
