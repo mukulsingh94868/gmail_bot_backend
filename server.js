@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import AuthRoutes from './routes/AuthRoutes.js';
 import PositionRoutes from './routes/PositionRoutes.js';
 import PositionAppliedRoutes from './routes/PositionAppliedRoutes.js';
+import JobPostRoutes from './routes/JobPostRoutes.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use("/api/uploads", express.static("uploads"));
 app.use('/api/auth', AuthRoutes);
 app.use('/api/position', PositionRoutes);
 app.use('/api/apply', PositionAppliedRoutes);
+app.use('/api/jobpost', JobPostRoutes);
 
 mongoose.connect(MONGO_URI).then(() => {
         console.log('DB connection established');
