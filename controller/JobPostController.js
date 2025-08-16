@@ -24,12 +24,40 @@ export const createJobPost = async (req, res) => {
 
 export const getJobPosts = async (req, res) => {
   try {
-    const jobs = await JobPostModel.find().populate(
-      "recruiterId",
-      "name email role"
-    );
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
 
-    res.status(200).json({ statusCode: 200, data: jobs });
+    const skip = (page - 1) * limit;
+
+    const searchFilter = search
+      ? {
+          $or: [
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+            { location: { $regex: search, $options: "i" } },
+            { employmentType: { $regex: search, $options: "i" } },
+            { workMode: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const totalJobs = await JobPostModel.countDocuments(searchFilter);
+
+    const jobs = await JobPostModel.find(searchFilter)
+      .populate("recruiterId", "name email role")
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      statusCode: 200,
+      totalJobs,
+      currentPage: page,
+      totalPages: Math.ceil(totalJobs / limit),
+      pageSize: jobs.length,
+      data: jobs,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

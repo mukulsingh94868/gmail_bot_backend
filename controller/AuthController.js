@@ -33,7 +33,9 @@ export const registerUser = async (req, res) => {
 
     res.status(201).json({
       statusCode: 201,
-      message: `${role?.charAt(0).toUpperCase() + role?.slice(1).toLowerCase()} registered successfully`,
+      message: `${
+        role?.charAt(0).toUpperCase() + role?.slice(1).toLowerCase()
+      } registered successfully`,
       userId: user?._id,
       role: user?.role,
     });
@@ -47,19 +49,19 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     const user = await Auth.findOne({ email }).select("+password");
+    // If no user exists → "Please Register First"
     if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(404).json({ message: "User not found, Please Register First" });
     }
-
+    
+    // If password doesn't match → "Invalid credentials"
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const token = jwt.sign(
