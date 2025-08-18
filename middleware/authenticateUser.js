@@ -26,10 +26,10 @@ const authenticateUser = async (req, res, next) => {
       return res.status(401).json({ message: "User not found" });
     }
 
-    req.userId = user._id;
-    req.name = user.name;
-    req.email = user.email;
-    req.role = user.role;
+    req.userId = user?._id;
+    req.name = user?.name;
+    req.email = user?.email;
+    req.role = user?.role;
 
     next();
   } catch (err) {

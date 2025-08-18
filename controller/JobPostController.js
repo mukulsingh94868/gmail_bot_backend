@@ -1,14 +1,33 @@
 import JobPostModel from "../model/JobPostModel.js";
 
 export const createJobPost = async (req, res) => {
+  const recruiterId = req.userId;
   try {
+    const {
+      title,
+      description,
+      employmentType,
+      location,
+      workMode,
+      experienceLevel,
+      yearsOfExperience,
+      skillsRequired,
+    } = req.body;
+
     if (req.role !== "recruiter") {
       return res.status(403).json({ message: "Only recruiters can post jobs" });
     }
 
     const job = new JobPostModel({
-      ...req.body,
-      recruiter: req.userId,
+      recruiterId,
+      title,
+      description,
+      employmentType,
+      location,
+      workMode,
+      experienceLevel,
+      yearsOfExperience,
+      skillsRequired,
     });
 
     await job.save();
@@ -72,6 +91,19 @@ export const getJobPostById = async (req, res) => {
     );
     if (!job) return res.status(404).json({ message: "Job not found" });
     res.status(200).json({ statusCode: 200, message: "Job found", data: job });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getJobPostsByRecruiter = async (req, res) => {
+  const recruiterId = req.userId;
+  try {
+    const jobs = await JobPostModel.find({ recruiterId });
+    if (!jobs) return res.status(404).json({ message: "Jobs not found" });
+    res
+      .status(200)
+      .json({ statusCode: 200, message: "Jobs found", data: jobs });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
