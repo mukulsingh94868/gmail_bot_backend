@@ -2,7 +2,7 @@ import JobPost from "../model/JDModel.js";
 
 // Create a new job post
 export const createJobPost = async (req, res) => {
-    const recruiterId = req.userId;
+  const recruiterId = req.userId;
   try {
     const { JD } = req.body;
     if (!JD) {
@@ -15,7 +15,9 @@ export const createJobPost = async (req, res) => {
     });
 
     await job.save();
-    res.status(201).json({ job, message: "Job post created successfully", statusCode: 201 });
+    res
+      .status(201)
+      .json({ job, message: "Job post created successfully", statusCode: 201 });
   } catch (error) {
     console.log("error", error);
     res.status(500).json({ message: "Error creating job post", error });
@@ -29,7 +31,7 @@ export const getAllRecruiterJobPosts = async (req, res) => {
     const jobPosts = await JobPost.find({ recruiterId }).sort({
       createdAt: -1,
     });
-    res.json(jobPosts);
+    res.json({ jobPosts });
   } catch (error) {
     res.status(500).json({ message: "Error fetching job posts", error });
   }
@@ -74,7 +76,7 @@ export const getJobPostById = async (req, res) => {
     if (!jobPost) {
       return res.status(404).json({ message: "Job post not found" });
     }
-    res.json(jobPost);
+    res.json({ jobPost });
   } catch (error) {
     res.status(500).json({ message: "Error fetching job post", error });
   }
