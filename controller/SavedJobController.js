@@ -12,6 +12,8 @@ export const saveJobPost = async (req, res) => {
       return res.status(404).json({ message: "Job post not found" });
     }
 
+    console.log('jobExists', jobExists);
+
     const savedJob = await SavedJob.create({ userId, jobId });
     res.status(201).json({ statusCode: 201, savedJob, message: "Job saved successfully" });
   } catch (error) {
@@ -31,7 +33,7 @@ export const getSavedJobs = async (req, res) => {
       .populate("jobId")
       .sort({ createdAt: -1 });
 
-    res.json({ savedJobs });
+    res.json({ statusCode: 200, message: 'Fetched Saved Jobs', savedJobs });
   } catch (error) {
     res
       .status(500)
