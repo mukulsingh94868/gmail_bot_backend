@@ -18,6 +18,10 @@ const applicationSchema = new mongoose.Schema(
       enum: ["Applied"],
       default: "Applied",
     },
+    JD: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

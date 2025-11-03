@@ -11,6 +11,10 @@ const savedJobSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    JD: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
