@@ -72,7 +72,8 @@ export const getAllJobPosts = async (req, res) => {
 // Get single job post
 export const getJobPostById = async (req, res) => {
   try {
-    const jobPost = await JobPost.findById(req.params.id);
+    const { id } = req.params;
+    const jobPost = await JobPost.findById(id);
     if (!jobPost) {
       return res.status(404).json({ message: "Job post not found" });
     }
