@@ -1,4 +1,5 @@
 import JobPost from "../model/JDModel.js";
+import SavedJob from "../model/SavedJobModel.js";
 
 // Create a new job post
 export const createJobPost = async (req, res) => {
@@ -40,7 +41,10 @@ export const getAllRecruiterJobPosts = async (req, res) => {
 // Controller
 export const getAllJobPosts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "" } = req.query;
+    // parse pagination values as integers
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const search = req.query.search || "";
 
     const query = search ? { JD: { $regex: search, $options: "i" } } : {};
 
@@ -51,8 +55,29 @@ export const getAllJobPosts = async (req, res) => {
 
     const totalJobs = await JobPost.countDocuments(query);
 
+    // Determine saved jobs for the requesting user (if authenticated)
+    const userId = req.userId; // set by authenticate middleware when present
+
+    let savedJobIdsSet = new Set();
+    if (userId && jobPosts.length > 0) {
+      const jobIdStrings = jobPosts.map((j) => j._id.toString());
+      const savedJobs = await SavedJob.find({
+        userId,
+        jobId: { $in: jobIdStrings },
+      }).select("jobId");
+
+      savedJobIdsSet = new Set(savedJobs.map((s) => s.jobId));
+    }
+
+    // Attach isSaved flag to each job post
+    const jobPostsWithSavedFlag = jobPosts.map((job) => {
+      const jobObj = job.toObject ? job.toObject() : job;
+      jobObj.isSaved = savedJobIdsSet.has(jobObj._id.toString());
+      return jobObj;
+    });
+
     res.json({
-      jobPosts,
+      jobPosts: jobPostsWithSavedFlag,
       statusCode: 200,
       pagination: {
         totalJobs,

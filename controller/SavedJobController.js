@@ -49,7 +49,7 @@ export const removeSavedJob = async (req, res) => {
       return res.status(404).json({ message: "Saved job not found" });
     }
 
-    res.json({ message: "Job removed from saved list" });
+    res.json({ statusCode: 200, message: "Job removed from saved list" });
   } catch (error) {
     res
       .status(500)
