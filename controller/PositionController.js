@@ -1,5 +1,15 @@
 import axios from "axios";
 import Position from "../model/PositionModel.js";
+// import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+import dotenv from "dotenv";
+
+dotenv.config();
+
+// ✅ Initialize the Gemini AI client with your API key
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const applyForPosition = async (req, res) => {
   try {
@@ -172,13 +182,19 @@ export const getUserPositionRecords = async (req, res) => {
       return res.status(400).json({ message: "Invalid position ID" });
     }
 
-    const userPositions = await Position.find({ userId }).select("position -_id");
+    const userPositions = await Position.find({ userId }).select(
+      "position -_id"
+    );
 
-    const uniquePositions = [...new Set(userPositions.map((pos) => pos.position))];
+    const uniquePositions = [
+      ...new Set(userPositions.map((pos) => pos.position)),
+    ];
 
     const index = positionId - 1;
     if (index < 0 || index >= uniquePositions.length) {
-      return res.status(404).json({ message: "Position not found for given ID" });
+      return res
+        .status(404)
+        .json({ message: "Position not found for given ID" });
     }
 
     const selectedPosition = uniquePositions[index];
@@ -196,56 +212,122 @@ export const getUserPositionRecords = async (req, res) => {
   }
 };
 
+// export const generateMail = async (req, res) => {
+//   const { position } = req.body;
+//   const applicantName = req.name;
+//   const applicantEmail = req.email;
+
+//   try {
+//     const prompt = `${position}`;
+
+//     const response = await axios.post(
+//       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+//       {
+//         contents: [
+//           {
+//             parts: [{ text: prompt }],
+//           },
+//         ],
+//       }
+//     );
+
+//     const fullText = response?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+//     let subject = "";
+//     let body = "";
+
+//     if (fullText) {
+//       const [subjectLine, ...bodyLines] = fullText.split("\n\n");
+//       subject = subjectLine.replace(/^Subject:\s*/i, "").trim();
+
+//       subject = subject.replace(/\[Your Name\]/i, applicantName);
+
+//       body = bodyLines.join("\n\n").trim();
+//       body = body
+//         .replace(/\[Your Name\]/gi, applicantName)
+//         .replace(/\[Your Email Address\]/gi, applicantEmail || "");
+//     }
+
+//     res.status(200).json({
+//       statusCode: 200,
+//       message: `Email is generated successfully`,
+//       data: {
+//         subject,
+//         body,
+//       },
+//     });
+//   } catch (error) {
+//     console.error(
+//       "Error generating email:",
+//       error.response?.data || error.message
+//     );
+//     res.status(500).json({
+//       statusCode: 500,
+//       message: "Error generating email",
+//       error: error.response?.data || error.message,
+//     });
+//   }
+// };
+
+async function generateContentWithRetry(
+  model,
+  prompt,
+  retries = 3,
+  delay = 2000
+) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const result = await model.generateContent(prompt);
+      return result;
+    } catch (error) {
+      if (error.message.includes("503")) {
+        console.warn(`Gemini overloaded. Retrying... (${i + 1}/${retries})`);
+        await new Promise((r) => setTimeout(r, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error("Gemini API is overloaded. Please try again later.");
+}
+
 export const generateMail = async (req, res) => {
   const { position } = req.body;
   const applicantName = req.name;
   const applicantEmail = req.email;
 
   try {
+    // const prompt = `Write a professional email regarding the position: ${position}.`;
     const prompt = `${position}`;
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); // ✅ valid model
+    // const result = await model.generateContent(prompt);
+    const result = await generateContentWithRetry(model, prompt);
 
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
-        ]
-      }
-    );
-
-    const fullText = response?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    let subject = '';
-    let body = '';
+    const fullText = result.response.text();
+    let subject = "",
+      body = "";
 
     if (fullText) {
-      const [subjectLine, ...bodyLines] = fullText.split('\n\n');
-      subject = subjectLine.replace(/^Subject:\s*/i, '').trim();
-
-      subject = subject.replace(/\[Your Name\]/i, applicantName);
-      
-      body = bodyLines.join('\n\n').trim();
+      const [subjectLine, ...bodyLines] = fullText.split("\n\n");
+      subject = subjectLine.replace(/^Subject:\s*/i, "").trim();
+      subject = subject.replace("[Your Name]", applicantName);
+      body = bodyLines.join("\n\n").trim();
       body = body
         .replace(/\[Your Name\]/gi, applicantName)
-        .replace(/\[Your Email Address\]/gi, applicantEmail || '')
+        .replace(/\[Your Email Address\]/gi, applicantEmail || "");
     }
 
     res.status(200).json({
       statusCode: 200,
-      message: `Email is generated successfully`,
-      data: {
-        subject,
-        body,
-      },
+      message: "Email is generated successfully",
+      data: { subject, body },
     });
   } catch (error) {
-    console.error('Error generating email:', error.response?.data || error.message);
+    console.error("Error generating email:", error);
     res.status(500).json({
       statusCode: 500,
-      message: 'Error generating email',
-      error: error.response?.data || error.message,
+      message: "Error generating email",
+      error: error.message,
     });
   }
 };
