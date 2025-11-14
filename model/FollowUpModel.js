@@ -23,7 +23,7 @@ const followUpSchema = new mongoose.Schema(
     },
     originalMailId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Apply", // or whatever your original mail collection is called
+      ref: "PositionApplied", // or whatever your original mail collection is called
       default: null,
     },
     followUpCount: {
@@ -73,6 +73,8 @@ followUpSchema.index({ userId: 1, status: 1 });
 // Index for analytics - follow-ups by date
 followUpSchema.index({ createdAt: -1 });
 
-const FollowUp = mongoose.model("FollowUp", followUpSchema);
+// const FollowUpModel = mongoose.model("FollowUpModel", followUpSchema);
 
-export default FollowUp;
+// export default FollowUpModel;
+
+export default mongoose.model("FollowUp", followUpSchema);
