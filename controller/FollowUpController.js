@@ -3,7 +3,7 @@
 // LOCATION: Place this in your backend controllers folder
 // ============================================
 
-import FollowUp from "../models/FollowUp.js";
+import FollowUp from "../model/followUpModel.js";
 
 /**
  * POST /api/followups/send
@@ -12,9 +12,8 @@ import FollowUp from "../models/FollowUp.js";
  */
 export const sendFollowUp = async (req, res) => {
   try {
-    const { emailApplied, positionApplied, originalMailId, followUpTemplate } =
-      req.body;
-    const userId = req.user?.id || req.user?._id; // adjust based on your auth middleware
+    const { emailApplied, positionApplied, originalMailId, followUpTemplate } = req.body;
+    const userId = req.userId; // adjust based on your auth middleware
 
     // Validation
     if (!emailApplied || !positionApplied || !followUpTemplate) {
@@ -117,7 +116,7 @@ export const sendFollowUp = async (req, res) => {
 export const checkFollowUpStatus = async (req, res) => {
   try {
     const { emailApplied, positionApplied } = req.query;
-    const userId = req.user?.id || req.user?._id;
+    const userId = req.userId || req.user?._id;
 
     if (!userId) {
       return res.status(401).json({
@@ -182,7 +181,7 @@ export const checkFollowUpStatus = async (req, res) => {
  */
 export const listFollowUps = async (req, res) => {
   try {
-    const userId = req.user?.id || req.user?._id;
+    const userId = req.userId || req.user?._id;
     const { status = "pending", limit = 10, skip = 0 } = req.query;
 
     if (!userId) {
@@ -234,7 +233,7 @@ export const listFollowUps = async (req, res) => {
 export const getFollowUpDetail = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id || req.user?._id;
+    const userId = req.userId || req.user?._id;
 
     if (!userId) {
       return res.status(401).json({
@@ -281,7 +280,7 @@ export const getFollowUpDetail = async (req, res) => {
 export const markFollowUpResponded = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id || req.user?._id;
+    const userId = req.userId || req.user?._id;
 
     if (!userId) {
       return res.status(401).json({
@@ -332,7 +331,7 @@ export const markFollowUpResponded = async (req, res) => {
 export const deleteFollowUp = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id || req.user?._id;
+    const userId = req.userId || req.user?._id;
 
     if (!userId) {
       return res.status(401).json({

@@ -10,6 +10,7 @@ import JobPostRoutes from './routes/JobPostRoutes.js';
 import JDRoutes from './routes/JDRoutes.js';
 import SavedJobRoutes from './routes/SavedJobRoute.js';
 import AppliedJobRoutes from './routes/AppliedRoutes.js';
+import FollowUpRoutes from './routes/followUpRoutes.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use('/api/jobpost', JobPostRoutes);
 app.use('/api/jd', JDRoutes);
 app.use('/api/savedjobs', SavedJobRoutes);
 app.use('/api/appliedJobs', AppliedJobRoutes);
+app.use('/api/followUp', FollowUpRoutes);
 
 mongoose.connect(MONGO_URI).then(() => {
         console.log('DB connection established');
