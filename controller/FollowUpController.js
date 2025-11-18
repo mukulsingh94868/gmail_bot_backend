@@ -8,11 +8,12 @@ import FollowUp from "../model/followUpModel.js";
 /**
  * POST /api/followups/send
  * Send a follow-up email and record it in the database
- * Validation: max 3 follow-ups per unique (userId, emailApplied) pair
+ * Validation: max 3 follow-ups per unique (userId, emailApplied, positionApplied) tuple
  */
 export const sendFollowUp = async (req, res) => {
   try {
-    const { emailApplied, positionApplied, originalMailId, followUpTemplate } = req.body;
+    const { emailApplied, positionApplied, originalMailId, followUpTemplate } =
+      req.body;
     const userId = req.userId; // adjust based on your auth middleware
 
     // Validation
@@ -31,11 +32,16 @@ export const sendFollowUp = async (req, res) => {
       });
     }
 
-    // Check or create follow-up record
-    let followUpRecord = await FollowUp.findOne({ userId, emailApplied });
+    // Check or create follow-up record scoped to positionApplied
+    // This ensures follow-up counts are tracked per (userId, emailApplied, positionApplied)
+    let followUpRecord = await FollowUp.findOne({
+      userId,
+      emailApplied,
+      positionApplied,
+    });
 
     if (!followUpRecord) {
-      // First time following up with this email - create new record
+      // First time following up for this email+position - create new record
       followUpRecord = new FollowUp({
         userId,
         emailApplied,
@@ -58,7 +64,7 @@ export const sendFollowUp = async (req, res) => {
       if (followUpRecord.followUpCount >= 3) {
         return res.status(400).json({
           statusCode: 400,
-          message: "Maximum follow-ups (3) reached for this email",
+          message: "Maximum follow-ups (3) reached for this email and position",
           data: {
             followUpCount: followUpRecord.followUpCount,
             canFollowUp: false,
@@ -125,15 +131,21 @@ export const checkFollowUpStatus = async (req, res) => {
       });
     }
 
-    if (!emailApplied) {
+    // Require both email and position when checking follow-ups so status is per-position
+    if (!emailApplied || !positionApplied) {
       return res.status(400).json({
         statusCode: 400,
-        message: "emailApplied query parameter is required",
+        message:
+          "emailApplied and positionApplied query parameters are required",
       });
     }
 
-    // Find follow-up record
-    const followUpRecord = await FollowUp.findOne({ userId, emailApplied });
+    // Find follow-up record scoped to the position
+    const followUpRecord = await FollowUp.findOne({
+      userId,
+      emailApplied,
+      positionApplied,
+    });
 
     if (!followUpRecord) {
       // No follow-ups yet
@@ -182,7 +194,12 @@ export const checkFollowUpStatus = async (req, res) => {
 export const listFollowUps = async (req, res) => {
   try {
     const userId = req.userId || req.user?._id;
-    const { status = "pending", limit = 10, skip = 0 } = req.query;
+    const {
+      status = "pending",
+      limit = 10,
+      skip = 0,
+      positionApplied,
+    } = req.query;
 
     if (!userId) {
       return res.status(401).json({
@@ -195,6 +212,10 @@ export const listFollowUps = async (req, res) => {
     const query = { userId };
     if (status) {
       query.status = status;
+    }
+    // optional filter by positionApplied to list follow-ups for a specific position
+    if (positionApplied) {
+      query.positionApplied = positionApplied;
     }
 
     // Fetch follow-ups
@@ -251,8 +272,8 @@ export const getFollowUpDetail = async (req, res) => {
       });
     }
 
-    // Verify ownership
-    if (followUpRecord.userId !== userId) {
+    // Verify ownership (compare string forms to be safe with ObjectId vs string)
+    if (followUpRecord.userId.toString() !== userId.toString()) {
       return res.status(403).json({
         statusCode: 403,
         message: "Unauthorized: You do not own this follow-up record",
@@ -298,7 +319,7 @@ export const markFollowUpResponded = async (req, res) => {
       });
     }
 
-    if (followUpRecord.userId !== userId) {
+    if (followUpRecord.userId.toString() !== userId.toString()) {
       return res.status(403).json({
         statusCode: 403,
         message: "Unauthorized",
@@ -349,7 +370,7 @@ export const deleteFollowUp = async (req, res) => {
       });
     }
 
-    if (followUpRecord.userId !== userId) {
+    if (followUpRecord.userId.toString() !== userId.toString()) {
       return res.status(403).json({
         statusCode: 403,
         message: "Unauthorized",
