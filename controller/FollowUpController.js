@@ -88,7 +88,7 @@ export const sendFollowUp = async (req, res) => {
         followUpRecord.positionApplied = positionApplied;
       }
     }
-
+    
     // Save the record
     await followUpRecord.save();
 
