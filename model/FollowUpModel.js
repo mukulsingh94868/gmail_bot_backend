@@ -65,7 +65,12 @@ const followUpSchema = new mongoose.Schema(
 
 // Compound unique index on userId and emailApplied
 // This ensures only one follow-up record per user per email
-followUpSchema.index({ userId: 1, emailApplied: 1 }, { unique: true });
+
+// followUpSchema.index({ userId: 1, emailApplied: 1 }, { unique: true });
+followUpSchema.index(
+  { userId: 1, emailApplied: 1, positionApplied: 1 },
+  { unique: true }
+);
 
 // Index for querying pending follow-ups
 followUpSchema.index({ userId: 1, status: 1 });
