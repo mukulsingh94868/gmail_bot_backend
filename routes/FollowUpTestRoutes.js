@@ -11,7 +11,7 @@ import {
   getFollowUpDetail,
   markFollowUpResponded,
   deleteFollowUp,
-} from "../controller/followUpController.js";
+} from "../controller/FollowUpTestController.js";
 import authenticateUser from "../middleware/authenticateUser.js";
 
 const router = express.Router();

@@ -10,7 +10,7 @@ import JobPostRoutes from './routes/JobPostRoutes.js';
 import JDRoutes from './routes/JDRoutes.js';
 import SavedJobRoutes from './routes/SavedJobRoute.js';
 import AppliedJobRoutes from './routes/AppliedRoutes.js';
-import FollowUpRoutes from './routes/FollowUpRoutes.js';
+import FollowUpRoutes from './routes/FollowUpTestRoutes.js';
 
 dotenv.config();
 
