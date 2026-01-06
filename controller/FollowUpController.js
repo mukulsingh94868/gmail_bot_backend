@@ -3,7 +3,7 @@
 // LOCATION: Place this in your backend controllers folder
 // ============================================
 
-import FollowUp from "../model/followUpModel.js";
+import FollowUp from "../model/FollowUpTestModel.js";
 
 /**
  * POST /api/followups/send
