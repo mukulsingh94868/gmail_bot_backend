@@ -3,7 +3,30 @@ import Contact from "../model/contactModel.js";
 export const createMailSend = async (req, res) => {
   try {
     const { name, email, description } = req.body;
-    const newContact = new Contact({ name, email, description });
+
+    // Validation
+    if (!name || !email || !description) {
+      return res.status(400).json({
+        message: "All fields (name, email, description) are required",
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Check if email already exists
+    const existingContact = await Contact.findOne({ email: email.trim() });
+    if (existingContact) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+    const newContact = new Contact({
+      name: name.trim(),
+      email: email.trim(),
+      description: description.trim(),
+    });
     await newContact.save();
     res.status(201).json({
       statusCode: 201,
