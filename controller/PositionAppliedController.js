@@ -31,7 +31,7 @@ export const PositionApplied = async (req, res) => {
 export const getPositionApplied = async (req, res) => {
   const userId = req.userId;
   try {
-    const positionApplied = await PositionAppliedModel.find({ userId });
+    const positionApplied = await PositionAppliedModel.find({ userId }).sort({ dateAndTime: -1 });
 
     return res.status(200).json({
       statusCode: 200,
