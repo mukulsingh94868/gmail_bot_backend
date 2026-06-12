@@ -41,3 +41,4 @@ mongoose.connect(MONGO_URI).then(() => {
             console.log(`Server is running on http://localhost: ${PORT}`);
           });
     }).catch((error) => console.error('MongoDB connection error:', error));
+    
